@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <title>Validate bank</title>
+  <script src="../js/registry.js"></script>
+  <script src="../js/runner.js"></script>
+  <script src="../js/ts-runtime.js"></script>
+  <script src="../js/react-runtime.js"></script>
+  <script src="../js/vue-runtime.js"></script>
+  <script src="../data/_topics.js"></script>
+  <script src="validate-core.js"></script>
+</head>
+<body>
+  <pre id="out">loading…</pre>
+  <script>
+    (function () {
+      var params = new URLSearchParams(location.search);
+      var topics = (params.get('topics') || '').split(',').filter(Boolean);
+      if (topics.length) FE.dataFiles = topics;
+      if (params.has('examples')) FE.dataFiles = ['../tools/examples'];
+      var out = document.getElementById('out');
+      FE.loadData('../data/', function () {
+        validateBank({
+          topics: topics,
+          onProgress: function (done, total) { out.textContent = 'running ' + done + '/' + total; }
+        }).then(function (report) {
+          window.__report = report;
+          out.textContent = JSON.stringify(report, null, 2);
+          window.__done = true;
+        }, function (err) {
+          window.__report = { ok: false, fatal: String(err && err.stack || err) };
+          window.__done = true;
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
